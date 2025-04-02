@@ -18,9 +18,9 @@ class UniversalFileViewer extends StatelessWidget {
 
   const UniversalFileViewer(
       {super.key,
-      required this.file,
-      this.padding,
-      this.backgroundColor = Colors.white});
+        required this.file,
+        this.padding,
+        this.backgroundColor = Colors.white});
 
   /// Builds a widget that displays the file at [file].
   ///
@@ -45,7 +45,7 @@ class UniversalFileViewer extends StatelessWidget {
               child: VideoPlayerWidget(file: file));
         case FileType.pdf:
           return PdfViewer.file(file.path,
-              params: const PdfViewerParams(margin: 32));
+              params: const PdfViewerParams(margin: 0));
         case FileType.word:
           return DocxToFlutter(file: file, padding: padding);
         case FileType.excel:

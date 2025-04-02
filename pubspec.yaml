@@ -5,7 +5,7 @@ homepage: https://github.com/Shonu72/
 repository: https://github.com/Shonu72/universal_file_viewer
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: '>=3.0.0 <4.0.0'
   flutter: ">=1.17.0"
 
 platforms:
@@ -17,19 +17,19 @@ dependencies:
   flutter:
     sdk: flutter
 
-  open_file: ^3.5.10
-  video_player: ^2.9.3
-  pdfrx: ^1.1.11
-  excel: ^4.0.6
-  path: ^1.9.1
-  path_provider: ^2.1.5
-  archive: ^3.6.1
-  xml: ^6.5.0
-  markdown: ^7.3.0
-  webview_flutter: ^4.10.0
-  webview_flutter_web: ^0.2.3+4
-  shimmer: ^3.0.0
-  docx_file_viewer: ^0.0.7
+#  open_file:
+  video_player:
+  pdfrx:
+  excel: 
+  path: 
+  path_provider: 
+  archive:
+  xml: 
+  markdown: 
+  webview_flutter:
+  webview_flutter_web:
+  shimmer:
+
   ### in the near future use in case the docX owner do not merge I'll create the lib for the mean time I put the code in the word file preview
   ###     #git:
   #    #  url: https://github.com/oscarshaitan/docx_viewer
