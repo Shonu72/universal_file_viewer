@@ -30,8 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  universal_file_viewer: 
-      path: ../../universal_file_viewer
+  universal_file_viewer:
+    path: ../../universal_file_viewer
   file_picker:
 
   # The following adds the Cupertino Icons font to your application.

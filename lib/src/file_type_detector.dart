@@ -2,7 +2,7 @@
 
 import 'package:path/path.dart' as p;
 
-enum FileType { image, video, pdf, word, excel, csv, text, md }
+enum FileType { image, video, pdf, word, excel, csv, text, md, ppt }
 
 /// Detect the file type of the given file path.
 ///
@@ -16,7 +16,11 @@ enum FileType { image, video, pdf, word, excel, csv, text, md }
 /// - ppt: .ppt, .pptx
 /// - text: .txt, .md
 FileType? detectFileType(String path) {
-  final String extension = p.extension(path).toLowerCase();
+  // For remote URLs like https://host/file.pdf?token=..., inspect uri.path.
+  final Uri? uri = Uri.tryParse(path);
+  final String normalizedPath =
+      (uri != null && uri.hasScheme && uri.path.isNotEmpty) ? uri.path : path;
+  final String extension = p.extension(normalizedPath).toLowerCase();
 
   if (<String>['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff']
       .contains(extension)) {
@@ -31,11 +35,9 @@ FileType? detectFileType(String path) {
     return FileType.excel;
   } else if (extension == '.csv') {
     return FileType.csv;
-  }
-  /*else if (<String>['.ppt', '.pptx'].contains(extension)) {
-    return FileType.ppt;*/
-
-  else if (<String>['.txt'].contains(extension)) {
+  } else if (<String>['.ppt', '.pptx'].contains(extension)) {
+    return FileType.ppt;
+  } else if (<String>['.txt'].contains(extension)) {
     return FileType.text;
   } else if (<String>['.md'].contains(extension)) {
     return FileType.md;
