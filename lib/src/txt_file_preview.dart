@@ -23,7 +23,7 @@ class TxtPreviewScreen extends StatefulWidget {
 // ignore: public_member_api_docs
 class TxtPreviewScreenState extends State<TxtPreviewScreen> {
   /// The data read from the TXT file.
-  late final Future<String> txtData;
+  late Future<String> txtData;
 
   @override
   void initState() {
@@ -39,7 +39,9 @@ class TxtPreviewScreenState extends State<TxtPreviewScreen> {
   void didUpdateWidget(covariant TxtPreviewScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.file != widget.file) {
-      readTxtFile(widget.file);
+      setState(() {
+        txtData = readTxtFile(widget.file);
+      });
     }
   }
 
@@ -73,7 +75,8 @@ class TxtPreviewScreenState extends State<TxtPreviewScreen> {
               body: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 280),
                   child: Padding(
-                    padding: widget.padding!,
+                    padding:
+                        widget.padding ?? const EdgeInsets.only(bottom: 68),
                     child: Text(snapshot.hasData
                         ? snapshot.requireData
                         : "No TXT Data Loaded"),

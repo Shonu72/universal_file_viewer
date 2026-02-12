@@ -26,10 +26,10 @@ class MdPreviewScreen extends StatefulWidget {
 // ignore: public_member_api_docs
 class MdPreviewScreenState extends State<MdPreviewScreen> {
   /// The data read from the MD file.
-  late String mdData;
+  String mdData = '';
 
   /// The data in html format from the md file.
-  late String rawHtml;
+  String rawHtml = '';
   late final WebViewController _controller = WebViewController();
 
   @override
@@ -81,7 +81,7 @@ class MdPreviewScreenState extends State<MdPreviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Padding(
-      padding: widget.padding!,
+      padding: widget.padding ?? const EdgeInsets.only(bottom: 68),
       child: Center(
           child: rawHtml.isNotEmpty
               ? WebViewWidget(controller: _controller)
