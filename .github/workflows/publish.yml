@@ -73,4 +73,6 @@ jobs:
           dart pub token add https://pub.dev --env-var PUB_TOKEN
 
       - name: Publish to pub.dev
+        env:
+          PUB_TOKEN: ${{ secrets.PUB_TOKEN }}
         run: flutter pub publish --force
