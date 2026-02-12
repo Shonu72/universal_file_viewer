@@ -3,48 +3,56 @@ name: Publish to pub.dev
 on:
   push:
     tags:
-      - 'v*' # Runs only when a tag like v1.0.0 is pushed
+      - 'v*.*.*'
+  workflow_dispatch:
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.24.5 # Use your Flutter version
-
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
+          channel: stable
+          cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      # Run dart format to check if code is properly formatted
-      - name: Check Dart Formatting
-        run: dart format --set-exit-if-changed .
-
-      # Run static analysis to check for errors or warnings
-      - name: Run Dart Analysis
-        run: dart analyze
-
-      # Run dry-run before publishing to check for issues
-      - name: Run Dry-Run for Publishing
-        run: dart pub publish --dry-run
-
-      # Publish package to pub.dev
-      - name: Publish package
-        env:
-          PUB_DEV_TOKEN: ${{ secrets.PUB_DEV_TOKEN }}
+      - name: Ensure tag matches pubspec version
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          mkdir -p ~/.pub-cache
-          cat <<EOF > ~/.pub-cache/credentials.json
-          {
-            "accessToken": "${{ secrets.PUB_DEV_TOKEN }}"
-          }
-          EOF
-          dart pub publish --force
+          PACKAGE_VERSION="$(grep '^version:' pubspec.yaml | head -n1 | awk '{print $2}')"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ -z "$PACKAGE_VERSION" ]; then
+            echo "Could not read version from pubspec.yaml"
+            exit 1
+          fi
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag version ($TAG_VERSION) does not match pubspec version ($PACKAGE_VERSION)."
+            exit 1
+          fi
+          echo "Publishing version $PACKAGE_VERSION"
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Publish dry-run
+        run: flutter pub publish --dry-run
+
+      - name: Configure pub.dev token
+        env:
+          PUB_TOKEN: ${{ secrets.PUB_TOKEN }}
+        run: dart pub token add https://pub.dev --env-var PUB_TOKEN
+
+      - name: Publish to pub.dev
+        run: flutter pub publish --force
