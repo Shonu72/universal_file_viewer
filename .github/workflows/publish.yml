@@ -27,7 +27,7 @@ jobs:
       - name: Ensure tag matches pubspec version
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          PACKAGE_VERSION="$(grep '^version:' pubspec.yaml | head -n1 | awk '{print $2}')"
+          PACKAGE_VERSION="$(grep '^version:' pubspec.yaml | head -n1 | awk '{print $2}')" 
           TAG_VERSION="${GITHUB_REF_NAME#v}"
           if [ -z "$PACKAGE_VERSION" ]; then
             echo "Could not read version from pubspec.yaml"
