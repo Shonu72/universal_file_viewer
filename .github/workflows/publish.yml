@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  workflow_dispatch:
 
 jobs:
   publish:
@@ -49,10 +48,29 @@ jobs:
       - name: Publish dry-run
         run: flutter pub publish --dry-run
 
+      - name: Ensure version is not already published
+        run: |
+          PACKAGE_NAME="$(grep '^name:' pubspec.yaml | head -n1 | awk '{print $2}')"
+          PACKAGE_VERSION="$(grep '^version:' pubspec.yaml | head -n1 | awk '{print $2}')"
+          if [ -z "$PACKAGE_NAME" ] || [ -z "$PACKAGE_VERSION" ]; then
+            echo "Failed to parse package name/version from pubspec.yaml."
+            exit 1
+          fi
+          if curl -fsSL "https://pub.dev/api/packages/$PACKAGE_NAME" | grep -q "\"version\":\"$PACKAGE_VERSION\""; then
+            echo "Version $PACKAGE_VERSION is already published on pub.dev."
+            echo "Bump pubspec.yaml version and create a new tag."
+            exit 1
+          fi
+
       - name: Configure pub.dev token
         env:
           PUB_TOKEN: ${{ secrets.PUB_TOKEN }}
-        run: dart pub token add https://pub.dev --env-var PUB_TOKEN
+        run: |
+          if [ -z "${PUB_TOKEN:-}" ]; then
+            echo "Missing PUB_TOKEN secret in GitHub Actions."
+            exit 1
+          fi
+          dart pub token add https://pub.dev --env-var PUB_TOKEN
 
       - name: Publish to pub.dev
         run: flutter pub publish --force
