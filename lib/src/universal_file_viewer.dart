@@ -176,8 +176,8 @@ class _UniversalFileViewerState extends State<UniversalFileViewer> {
       return _unsupportedView('No file selected.');
     }
 
-    final FileType? type = detectFileType(sourcePath);
-    if (type == null) {
+    FileType? type = detectFileType(sourcePath);
+    if (type == null && widget.file != null) {
       return _unsupportedView(
         'File type not supported.',
         onOpenExternal: () => _openInExternalApp(),
@@ -191,11 +191,24 @@ class _UniversalFileViewerState extends State<UniversalFileViewer> {
           return const Center(child: CircularProgressIndicator.adaptive());
         }
 
-        if (snapshot.hasError || !snapshot.hasData) {
+        if (snapshot.hasError) {
+          return _unsupportedView('Unable to load file:\n${snapshot.error}');
+        }
+        if (!snapshot.hasData) {
           return _unsupportedView('Unable to load file.');
         }
 
-        return _buildForType(snapshot.requireData, type);
+        final File file = snapshot.requireData;
+        type ??= detectFileType(file.path);
+
+        if (type == null) {
+          return _unsupportedView(
+            'File type not supported.',
+            onOpenExternal: () => _openInExternalApp(file: file),
+          );
+        }
+
+        return _buildForType(file, type!);
       },
     );
   }
