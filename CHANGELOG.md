@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Fixed an issue where remote files without extensions in their URL failed to load. The package now correctly infers the file extension using the `Content-Type` header from the remote server.
+
 ## 0.1.3
 
 - Added remote URL support via `UniversalFileViewer.remote(...)`
