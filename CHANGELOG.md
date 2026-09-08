@@ -1,3 +1,7 @@
+## 0.1.6
+
+- Fixed known bugs
+
 ## 0.1.5
 
 - Dependency Modernization & Cleanup:

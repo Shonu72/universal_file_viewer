@@ -1,6 +1,6 @@
 name: universal_file_viewer
 description: "A Flutter package to preview local and remote files with inline viewers and external fallback."
-version: 0.1.5
+version: 0.1.6
 homepage: https://github.com/Shonu72/
 repository: https://github.com/Shonu72/universal_file_viewer
 
