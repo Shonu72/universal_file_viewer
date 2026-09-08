@@ -1,11 +1,11 @@
 name: universal_file_viewer
 description: "A Flutter package to preview local and remote files with inline viewers and external fallback."
-version: 0.1.4
+version: 0.1.5
 homepage: https://github.com/Shonu72/
 repository: https://github.com/Shonu72/universal_file_viewer
 
 environment:
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ">=3.13.0 <4.0.0"
   flutter: ">=1.17.0"
 
 platforms:
@@ -19,22 +19,14 @@ dependencies:
 
   open_file: ^3.5.10
   video_player: ^2.9.5
-  pdfrx: ^1.1.29
-  excel: ^4.0.6
+  pdfrx: ^2.6.1
+  excel_community: ^2.3.0
   path: ^1.9.1
   path_provider: ^2.1.5
-  archive: ^3.6.1
-  xml: ^6.5.0
+  archive: ^4.0.9
+  xml: ^7.0.1
   http: ^1.5.0
-  markdown: ^7.3.0
-  webview_flutter: ^4.13.0
-  webview_flutter_web: ^0.2.3+4
-  shimmer: ^3.0.0
-  docx_file_viewer: ^0.0.7
-  ### in the near future use in case the docX owner do not merge I'll create the lib for the mean time I put the code in the word file preview
-  ###     #git:
-  #    #  url: https://github.com/oscarshaitan/docx_viewer
-  #    #  ref: 6356e9133f41cc56205d8da0e02c3ebb94440f25
+  flutter_markdown_plus: ^1.0.12
 
 dev_dependencies:
   flutter_test:

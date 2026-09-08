@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:excel/excel.dart' as exc;
+import 'package:excel_community/excel_community.dart' as exc;
 import 'package:flutter/foundation.dart'; // Import compute()
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:universal_file_viewer/universal_file_viewer.dart';
+import 'package:universal_file_viewer/src/core/file_type_detector.dart';
+import 'package:universal_file_viewer/src/widgets/shimmer_widget.dart';
 
 /// A widget that displays the contents of an Excel file specified by the file path.
 ///
@@ -134,7 +134,7 @@ class ExcelCSVPreviewScreenState extends State<ExcelCSVPreviewScreen> {
                         ),
                         padding: const EdgeInsets.all(16),
                         itemBuilder: (_, __) {
-                          return Shimmer.fromColors(
+                          return ShimmerWidget.fromColors(
                             baseColor: Colors.grey[300]!,
                             highlightColor: Colors.grey[100]!,
                             child: Container(

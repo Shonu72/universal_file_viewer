@@ -6,13 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdfrx/pdfrx.dart';
-import 'package:universal_file_viewer/src/excel_csv_file_preview.dart';
-import 'package:universal_file_viewer/src/file_type_detector.dart';
-import 'package:universal_file_viewer/src/md_file_preview.dart';
-import 'package:universal_file_viewer/src/remote_file_service.dart';
-import 'package:universal_file_viewer/src/txt_file_preview.dart';
-import 'package:universal_file_viewer/src/video_player_preview.dart';
-import 'package:universal_file_viewer/src/word_file_preview.dart';
+import 'package:universal_file_viewer/src/core/file_type_detector.dart';
+import 'package:universal_file_viewer/src/services/remote_file_service.dart';
+import 'package:universal_file_viewer/src/viewers/excel_csv_file_preview.dart';
+import 'package:universal_file_viewer/src/viewers/md_file_preview.dart';
+import 'package:universal_file_viewer/src/viewers/txt_file_preview.dart';
+import 'package:universal_file_viewer/src/viewers/video_player_preview.dart';
+import 'package:universal_file_viewer/src/viewers/word_file_preview.dart';
 
 class UniversalFileViewer extends StatefulWidget {
   final File? file;

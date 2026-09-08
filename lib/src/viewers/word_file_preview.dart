@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:docx_file_viewer/docx_file_viewer.dart';
+import 'package:flutter/material.dart';
+
+import 'package:archive/archive.dart';
 import 'package:xml/xml.dart';
 
 /// A widget that displays the contents of a Docx file as HTML.
