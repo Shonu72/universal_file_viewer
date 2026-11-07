@@ -15,26 +15,47 @@ import 'package:universal_file_viewer/src/viewers/video_player_preview.dart';
 import 'package:universal_file_viewer/src/viewers/word_file_preview.dart';
 
 class UniversalFileViewer extends StatefulWidget {
+  /// The file that gets opened in the [UniversalFileViewer].
+  /// Should be an instance of the [File] class.
   final File? file;
+
+  /// The url of the remote file to be opened in the [UniversalFileViewer].
   final String? fileUrl;
-  final EdgeInsets? padding;
+
+  /// Add inner padding added within the widget boundary.
+  final EdgeInsets? innerPadding;
+
+  /// The background color of the widget.
   final Color backgroundColor;
 
-  const UniversalFileViewer(
-      {super.key,
-      required File file,
-      this.padding,
-      this.backgroundColor = Colors.white})
-      : file = file,
-        fileUrl = null;
+  /// The background color of the unsupported file window.
+  final Color unsupportedBackgroundColor;
 
-  const UniversalFileViewer.remote(
-      {super.key,
-      required String fileUrl,
-      this.padding,
-      this.backgroundColor = Colors.white})
-      : file = null,
-        fileUrl = fileUrl;
+  /// The foreground Color of the error text.
+  final Color errorTextforegroundColor;
+
+  /// The styling options for the "Open in external app button".
+  final ButtonStyle? openExternalAppButtonStyle;
+
+  const UniversalFileViewer({
+    super.key,
+    required this.file,
+    this.innerPadding,
+    this.backgroundColor = Colors.white,
+    this.unsupportedBackgroundColor = Colors.white,
+    this.errorTextforegroundColor = Colors.black,
+    this.openExternalAppButtonStyle,
+  }) : fileUrl = null;
+
+  const UniversalFileViewer.remote({
+    super.key,
+    required this.fileUrl,
+    this.innerPadding,
+    this.backgroundColor = Colors.white,
+    this.unsupportedBackgroundColor = Colors.white,
+    this.errorTextforegroundColor = Colors.black,
+    this.openExternalAppButtonStyle,
+  }) : file = null;
 
   @override
   State<UniversalFileViewer> createState() => _UniversalFileViewerState();
@@ -49,6 +70,11 @@ class _UniversalFileViewerState extends State<UniversalFileViewer> {
   @override
   void initState() {
     super.initState();
+    if (widget.file != null && widget.fileUrl != null) {
+      throw FlutterError(
+        "Either `file` or `filePath` should be provided, not both.",
+      );
+    }
     _resolvedFile = _resolveFile();
   }
 
@@ -103,8 +129,8 @@ class _UniversalFileViewerState extends State<UniversalFileViewer> {
 
   Widget _unsupportedView(String message, {VoidCallback? onOpenExternal}) {
     return Container(
-      padding: widget.padding,
-      color: widget.backgroundColor,
+      padding: widget.innerPadding,
+      color: widget.unsupportedBackgroundColor,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -113,17 +139,20 @@ class _UniversalFileViewerState extends State<UniversalFileViewer> {
             if (onOpenExternal != null) ...<Widget>[
               const SizedBox(height: 12),
               ElevatedButton.icon(
+                style: widget.openExternalAppButtonStyle,
                 onPressed: _isOpeningExternal ? null : onOpenExternal,
                 icon: _isOpeningExternal
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2))
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Icon(Icons.open_in_new),
                 label: Text(
-                    _isOpeningExternal ? 'Opening...' : 'Open in external app'),
+                  _isOpeningExternal ? 'Opening...' : 'Open in external app',
+                ),
               ),
-            ]
+            ],
           ],
         ),
       ),
@@ -134,17 +163,21 @@ class _UniversalFileViewerState extends State<UniversalFileViewer> {
     switch (type) {
       case FileType.image:
         return Container(
-            padding: widget.padding,
-            color: widget.backgroundColor,
-            child: Center(child: Image.file(file)));
+          padding: widget.innerPadding,
+          color: widget.backgroundColor,
+          child: Center(child: Image.file(file)),
+        );
       case FileType.video:
         return Container(
-            padding: widget.padding,
-            color: widget.backgroundColor,
-            child: VideoPlayerWidget(file: file));
+          padding: widget.innerPadding,
+          color: widget.backgroundColor,
+          child: VideoPlayerWidget(file: file),
+        );
       case FileType.pdf:
-        return PdfViewer.file(file.path,
-            params: const PdfViewerParams(margin: 32));
+        return PdfViewer.file(
+          file.path,
+          params: const PdfViewerParams(margin: 32),
+        );
       case FileType.word:
         // DOC binary files are not handled by the DOCX parser.
         if (p.extension(file.path).toLowerCase() == '.doc') {
@@ -153,14 +186,23 @@ class _UniversalFileViewerState extends State<UniversalFileViewer> {
             onOpenExternal: () => _openInExternalApp(file: file),
           );
         }
-        return DocxToFlutter(file: file, padding: widget.padding);
+        return DocxToFlutter(
+          file: file,
+          padding: widget.innerPadding,
+          backgroundColor: widget.backgroundColor,
+          errorTextforegroundColor: widget.errorTextforegroundColor,
+        );
       case FileType.excel:
       case FileType.csv:
-        return ExcelCSVPreviewScreen(file: file, padding: widget.padding);
+        return ExcelCSVPreviewScreen(
+          file: file,
+          padding: widget.innerPadding,
+          backgroundColor: widget.backgroundColor,
+        );
       case FileType.text:
-        return TxtPreviewScreen(file: file, padding: widget.padding);
+        return TxtPreviewScreen(file: file, padding: widget.innerPadding);
       case FileType.md:
-        return MdPreviewScreen(file: file, padding: widget.padding);
+        return MdPreviewScreen(file: file, padding: widget.innerPadding);
       case FileType.ppt:
         return _unsupportedView(
           'PowerPoint inline preview is not supported yet.',
@@ -177,6 +219,7 @@ class _UniversalFileViewerState extends State<UniversalFileViewer> {
     }
 
     FileType? type = detectFileType(sourcePath);
+
     if (type == null && widget.file != null) {
       return _unsupportedView(
         'File type not supported.',
@@ -184,31 +227,45 @@ class _UniversalFileViewerState extends State<UniversalFileViewer> {
       );
     }
 
-    return FutureBuilder<File>(
-      future: _resolvedFile,
-      builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator.adaptive());
-        }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ConstrainedBox(
+          constraints: constraints,
+          child: Container(
+            color: widget.backgroundColor,
+            child: FutureBuilder<File>(
+              future: _resolvedFile,
+              builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  );
+                }
 
-        if (snapshot.hasError) {
-          return _unsupportedView('Unable to load file:\n${snapshot.error}');
-        }
-        if (!snapshot.hasData) {
-          return _unsupportedView('Unable to load file.');
-        }
+                if (snapshot.hasError) {
+                  return _unsupportedView(
+                    'Unable to load file:\n${snapshot.error}',
+                  );
+                }
+                if (!snapshot.hasData) {
+                  return _unsupportedView('Unable to load file.');
+                }
 
-        final File file = snapshot.requireData;
-        type ??= detectFileType(file.path);
+                final File file = snapshot.requireData;
+                type ??= detectFileType(file.path);
 
-        if (type == null) {
-          return _unsupportedView(
-            'File type not supported.',
-            onOpenExternal: () => _openInExternalApp(file: file),
-          );
-        }
+                if (type == null) {
+                  return _unsupportedView(
+                    'File type not supported.',
+                    onOpenExternal: () => _openInExternalApp(file: file),
+                  );
+                }
 
-        return _buildForType(file, type!);
+                return _buildForType(file, type!);
+              },
+            ),
+          ),
+        );
       },
     );
   }

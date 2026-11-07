@@ -9,10 +9,14 @@ void main() {
     });
 
     test('detects file type from URL path with query params', () {
-      expect(detectFileType('https://example.com/a/doc.pdf?token=abc'),
-          FileType.pdf);
-      expect(detectFileType('https://example.com/video.MP4?download=true'),
-          FileType.video);
+      expect(
+        detectFileType('https://example.com/a/doc.pdf?token=abc'),
+        FileType.pdf,
+      );
+      expect(
+        detectFileType('https://example.com/video.MP4?download=true'),
+        FileType.video,
+      );
     });
 
     test('returns null for unsupported extensions', () {

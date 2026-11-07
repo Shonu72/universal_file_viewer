@@ -12,10 +12,11 @@ class MdPreviewScreen extends StatefulWidget {
   final EdgeInsets? padding;
 
   /// Creates a [MdPreviewScreen] widget.
-  const MdPreviewScreen(
-      {super.key,
-      required this.file,
-      this.padding = const EdgeInsets.only(bottom: 68)});
+  const MdPreviewScreen({
+    super.key,
+    required this.file,
+    this.padding = const EdgeInsets.only(bottom: 68),
+  });
 
   @override
   MdPreviewScreenState createState() => MdPreviewScreenState();
@@ -56,21 +57,14 @@ class MdPreviewScreenState extends State<MdPreviewScreen> {
   }
 
   @override
-
   /// Builds a widget that displays the MD file at [widget.file].
   Widget build(BuildContext context) {
-    final EdgeInsets padding = widget.padding ?? const EdgeInsets.only(bottom: 68);
+    final EdgeInsets padding =
+        widget.padding ?? const EdgeInsets.only(bottom: 68);
     return Scaffold(
       body: mdData.isNotEmpty
-          ? Markdown(
-              data: mdData,
-              selectable: true,
-              padding: padding,
-            )
-          : const Center(
-              child: Text("No MD Data Loaded"),
-            ),
+          ? Markdown(data: mdData, selectable: true, padding: padding)
+          : const Center(child: Text("No MD Data Loaded")),
     );
   }
 }
-

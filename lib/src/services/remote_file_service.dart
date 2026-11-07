@@ -31,24 +31,28 @@ class RemoteFileService {
     final http.Response response = await http.get(uri);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw HttpException(
-          'Failed to download remote file (${response.statusCode})');
+        'Failed to download remote file (${response.statusCode})',
+      );
     }
 
     final Directory tempDir = await getTemporaryDirectory();
     String ext = p.extension(uri.path);
-    
+
     // Fallback: Try to get extension from headers if URL lacks one
     if (ext.isEmpty || !ext.contains('.')) {
-      final String? contentDisposition = response.headers['content-disposition'];
+      final String? contentDisposition =
+          response.headers['content-disposition'];
       if (contentDisposition != null) {
-        final RegExp filenameRegex = RegExp(r'filename[^;=\n]*=(([\x22]).*?\2|[^;\n]*)');
+        final RegExp filenameRegex = RegExp(
+          r'filename[^;=\n]*=(([\x22]).*?\2|[^;\n]*)',
+        );
         final Match? match = filenameRegex.firstMatch(contentDisposition);
         if (match != null) {
           final String filename = match.group(1)?.replaceAll('"', '') ?? '';
           ext = p.extension(filename);
         }
       }
-      
+
       if (ext.isEmpty || !ext.contains('.')) {
         final String? contentType = response.headers['content-type'];
         final String? mimeExt = _extensionFromMime(contentType);

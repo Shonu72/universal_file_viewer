@@ -1,4 +1,6 @@
 analyzer:
+  errors:
+    always_specify_types: ignore
   exclude:
     - build/**
     - android/**

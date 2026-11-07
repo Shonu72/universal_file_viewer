@@ -90,6 +90,9 @@ class _SlidingGradientTransform extends GradientTransform {
   @override
   Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
     return Matrix4.translationValues(
-        bounds.width * (slidePercent * 2 - 1), 0, 0);
+      bounds.width * (slidePercent * 2 - 1),
+      0,
+      0,
+    );
   }
 }

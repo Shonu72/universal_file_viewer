@@ -67,7 +67,6 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   /// Builds the widget tree for the video player.
   @override
-
   /// Builds a video player widget.
   ///
   /// The widget is a [GestureDetector] that wraps a [VideoPlayer] in an
@@ -88,11 +87,7 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                   ),
                 ),
                 if (!_isPlaying)
-                  const Icon(
-                    Icons.play_arrow,
-                    size: 60,
-                    color: Colors.white,
-                  ),
+                  const Icon(Icons.play_arrow, size: 60, color: Colors.white),
               ],
             )
           : const Center(child: CircularProgressIndicator()),

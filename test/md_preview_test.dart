@@ -11,7 +11,8 @@ void main() {
 
     setUp(() async {
       tempFile = File(
-          '${Directory.systemTemp.path}/test_preview_${DateTime.now().millisecondsSinceEpoch}.md');
+        '${Directory.systemTemp.path}/test_preview_${DateTime.now().millisecondsSinceEpoch}.md',
+      );
       await tempFile.writeAsString('''
 # Test Heading
 
@@ -38,13 +39,12 @@ void main() {}
       }
     });
 
-    testWidgets('renders markdown elements successfully',
-        (WidgetTester tester) async {
+    testWidgets('renders markdown elements successfully', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         await tester.pumpWidget(
-          MaterialApp(
-            home: MdPreviewScreen(file: tempFile),
-          ),
+          MaterialApp(home: MdPreviewScreen(file: tempFile)),
         );
         // Wait for file read async operation to complete
         await Future<void>.delayed(const Duration(milliseconds: 100));
