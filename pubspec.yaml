@@ -17,14 +17,14 @@ dependencies:
   flutter:
     sdk: flutter
 
-  open_file: 4.0.0
+  open_file: ^4.0.0
   video_player: ^2.14.1
   pdfrx: ^2.12.0
-  excel_community: ^2.4.0
+  excel_community: ^2.3.0
   path: ^1.9.1
   path_provider: ^2.1.6
   archive: ^4.6.0
-  xml: ^6.3.0
+  xml: ^7.0.1
   http: ^1.6.0
   flutter_markdown_plus: ^1.0.12
 
