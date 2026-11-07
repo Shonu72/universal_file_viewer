@@ -24,7 +24,7 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.6
   archive: ^4.6.0
-  xml: ^7.1.0
+  xml: ^6.3.0
   http: ^1.6.0
   flutter_markdown_plus: ^1.0.12
 
