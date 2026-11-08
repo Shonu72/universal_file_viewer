@@ -75,10 +75,14 @@ class FileViewerScreenState extends State<FileViewerScreen> {
           const SizedBox(height: 20),
           Expanded(
             key: ValueKey('${_filePath}_${_urlController.text}'),
-            child:
-                _filePath != null
-                    ? UniversalFileViewer(file: File(_filePath!))
-                    : UniversalFileViewer.remote(fileUrl: _urlController.text),
+            child: SingleChildScrollView(
+              child:
+                  _filePath != null
+                      ? UniversalFileViewer(file: File(_filePath!))
+                      : UniversalFileViewer.remote(
+                        fileUrl: _urlController.text,
+                      ),
+            ),
           ),
         ],
       ),

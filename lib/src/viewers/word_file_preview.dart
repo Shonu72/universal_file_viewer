@@ -16,11 +16,20 @@ class DocxToFlutter extends StatefulWidget {
   /// The padding inside the scroll for the document
   final EdgeInsets? padding;
 
+  /// Background color of the document.
+  final Color backgroundColor;
+
+  /// Foreground color of the error text.
+  final Color errorTextforegroundColor;
+
   /// Creates a [DocxToFlutter] widget.
-  const DocxToFlutter(
-      {super.key,
-      required this.file,
-      this.padding = const EdgeInsets.only(bottom: 68)});
+  const DocxToFlutter({
+    super.key,
+    required this.file,
+    this.backgroundColor = Colors.white,
+    this.errorTextforegroundColor = Colors.black,
+    this.padding = const EdgeInsets.only(bottom: 68),
+  });
 
   @override
   DocxToFlutterState createState() => DocxToFlutterState();
@@ -34,10 +43,12 @@ class DocxToFlutterState extends State<DocxToFlutter> {
   void initState() {
     super.initState();
     _transformationController = TransformationController();
+    _docScrollCtrl = ScrollController();
     _loadDocument = DocxExtractor().renderLayout(widget.file);
   }
 
-  late TransformationController _transformationController;
+  late final TransformationController _transformationController;
+  late final ScrollController _docScrollCtrl;
   bool _isZooming = false;
 
   @override
@@ -49,56 +60,65 @@ class DocxToFlutterState extends State<DocxToFlutter> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: FutureBuilder<List<Widget>>(
-        future: _loadDocument,
-        builder: (BuildContext context, AsyncSnapshot<List<Widget>> snapshot) {
-          if (snapshot.hasData) {
-            return GestureDetector(
-              onScaleStart: (_) => setState(
-                  () => _isZooming = true), // Detect zoom gesture start
-              onScaleEnd: (_) => setState(() => _isZooming = false),
-              onScaleUpdate: (ScaleUpdateDetails details) {
-                if (details.scale != 1.0) {
-                  setState(() {
-                    _isZooming = true; // Keep zooming enabled
-                  });
-                  _transformationController.value = Matrix4.identity()
-                    // ignore: deprecated_member_use
-                    ..scale(details.scale);
-                }
-              }, // Detect zoom gesture end
-              child: InteractiveViewer(
-                transformationController: _transformationController,
-                panEnabled: false,
-                scaleEnabled: true,
-                minScale: 1.0,
-                maxScale: 5.0,
-                child: NotificationListener<ScrollNotification>(
-                  onNotification: (_) {
-                    return _isZooming; // Block scroll only when zooming
-                  },
-                  child: Scrollbar(
-                    child: ListView.builder(
-                      padding: widget.padding,
-                      itemCount: snapshot.requireData.length,
-                      physics: _isZooming
-                          ? const NeverScrollableScrollPhysics()
-                          : const BouncingScrollPhysics(),
-                      itemBuilder: (_, int index) =>
-                          snapshot.requireData[index],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          } else if (snapshot.hasError) {
-            return const Center(
-              child: Text("Error rendering layout"),
-            );
-          } else {
-            return const CircularProgressIndicator.adaptive();
-          }
-        },
+      child: DefaultTextStyle(
+        style: TextStyle(color: widget.errorTextforegroundColor),
+        child: Container(
+          color: widget.backgroundColor,
+          child: FutureBuilder<List<Widget>>(
+            future: _loadDocument,
+            builder:
+                (BuildContext context, AsyncSnapshot<List<Widget>> snapshot) {
+                  if (snapshot.hasData) {
+                    return GestureDetector(
+                      onScaleStart: (_) => setState(
+                        () => _isZooming = true,
+                      ), // Detect zoom gesture start
+                      onScaleEnd: (_) => setState(() => _isZooming = false),
+                      onScaleUpdate: (ScaleUpdateDetails details) {
+                        if (details.scale != 1.0) {
+                          setState(() {
+                            _isZooming = true; // Keep zooming enabled
+                          });
+                          _transformationController.value = Matrix4.identity()
+                            // ignore: deprecated_member_use
+                            ..scale(details.scale);
+                        }
+                      }, // Detect zoom gesture end
+                      child: InteractiveViewer(
+                        transformationController: _transformationController,
+                        panEnabled: false,
+                        scaleEnabled: true,
+                        minScale: 1.0,
+                        maxScale: 5.0,
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (_) {
+                            return _isZooming; // Block scroll only when zooming
+                          },
+                          child: Scrollbar(
+                            controller: _docScrollCtrl,
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              controller: _docScrollCtrl,
+                              padding: widget.padding,
+                              itemCount: snapshot.requireData.length,
+                              physics: _isZooming
+                                  ? const NeverScrollableScrollPhysics()
+                                  : const BouncingScrollPhysics(),
+                              itemBuilder: (_, int index) =>
+                                  snapshot.requireData[index],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return const Center(child: Text("Error rendering layout"));
+                  } else {
+                    return const CircularProgressIndicator.adaptive();
+                  }
+                },
+          ),
+        ),
       ),
     );
   }
@@ -120,8 +140,9 @@ class DocxExtractor {
   ///process the Docx into Flutter widgets
   Future<List<Widget>> renderLayout(File file) async {
     try {
-      final Archive archive =
-          ZipDecoder().decodeBytes(await file.readAsBytes());
+      final Archive archive = ZipDecoder().decodeBytes(
+        await file.readAsBytes(),
+      );
 
       // Extract document.xml and document.xml.rels
       final ArchiveFile? documentXmlFile = archive.files
@@ -133,7 +154,8 @@ class DocxExtractor {
 
       final ArchiveFile? relsXmlFile = archive.files
           .where(
-              (ArchiveFile file) => file.name == 'word/_rels/document.xml.rels')
+            (ArchiveFile file) => file.name == 'word/_rels/document.xml.rels',
+          )
           .firstOrNull;
       // final themeXmlFIle = archive.files
       //     .where((file) => file.name == 'word/theme/theme1.xml')
@@ -142,8 +164,9 @@ class DocxExtractor {
           .where((ArchiveFile file) => file.name == 'word/styles.xml')
           .firstOrNull;
       if (stylesXmlFile != null) {
-        final XmlDocument styleXml =
-            XmlDocument.parse(utf8.decode(stylesXmlFile.content));
+        final XmlDocument styleXml = XmlDocument.parse(
+          utf8.decode(stylesXmlFile.content),
+        );
 
         _parseStyles(styleXml);
       }
@@ -156,33 +179,34 @@ class DocxExtractor {
       //   // log(themerel.toXmlString());
       // }
       // Parse XML
-      final XmlDocument documentXml =
-          XmlDocument.parse(utf8.decode(documentXmlFile.content));
+      final XmlDocument documentXml = XmlDocument.parse(
+        utf8.decode(documentXmlFile.content),
+      );
 
       if (relsXmlFile != null) {
-        final XmlDocument relsXml =
-            XmlDocument.parse(utf8.decode(relsXmlFile.content));
+        final XmlDocument relsXml = XmlDocument.parse(
+          utf8.decode(relsXmlFile.content),
+        );
         _extractImageRelationships(relsXml, archive);
       }
 
       if (numberingXmlFile != null) {
-        final String numberingXmlContent =
-            utf8.decode(numberingXmlFile.content as List<int>);
+        final String numberingXmlContent = utf8.decode(
+          numberingXmlFile.content as List<int>,
+        );
         _parseNumberingDefinitions(numberingXmlContent);
       }
       // log(documentXml.toXmlString());
       // await _loadFontsFromFontTable(archive);
       // await _loadStyles(stylesXml);
       // Parse the content
-      return _parseContent(
-        documentXml: documentXml,
-      );
+      return _parseContent(documentXml: documentXml);
     } catch (e) {
       log(e.toString());
       // Handle error, log it or provide a fallback widget
 
       return <Widget>[
-        const Text('Error opening the document')
+        const Text('Error opening the document'),
       ]; // Fallback widget in case of error
     }
   }
@@ -196,15 +220,17 @@ class DocxExtractor {
     final Map<String, EdgeInsetsGeometry> newCellPadding =
         <String, EdgeInsetsGeometry>{};
     // log(stylesXml.toXmlString());
-    for (final XmlElement styleElement
-        in stylesXml.findAllElements('w:style')) {
+    for (final XmlElement styleElement in stylesXml.findAllElements(
+      'w:style',
+    )) {
       final String? styleId = styleElement.getAttribute('w:styleId');
       final String? type = styleElement.getAttribute('w:type');
 
       if (styleId != null && type != null) {
         final XmlElement? rPrElement = styleElement.getElement('w:rPr');
-        final XmlElement? tableBorderElement =
-            styleElement.getElement('w:tblPr');
+        final XmlElement? tableBorderElement = styleElement.getElement(
+          'w:tblPr',
+        );
 
         TextStyle? paragraphId;
         Border? border;
@@ -216,30 +242,33 @@ class DocxExtractor {
         if (pPRStyle != null) {
           final TextStyle pPRStyleId = _parseRunStyle(pPRStyle);
 
-          Border newBorder =
-              _createBorder(pPRStyle.findElements('w:pBdr').firstOrNull);
+          Border newBorder = _createBorder(
+            pPRStyle.findElements('w:pBdr').firstOrNull,
+          );
 
           paragraphId = pPRStyleId;
           border = newBorder;
           textAlign = _getTextAlign(pPRStyle.getElement('w:jc'));
         }
         if (tableBorderElement != null) {
-          final TableBorder? tableborder =
-              _parseTableStyle(tableBorderElement.getElement('w:tblBorders'));
+          final TableBorder? tableborder = _parseTableStyle(
+            tableBorderElement.getElement('w:tblBorders'),
+          );
           if (tableborder != null) {
             newTableBorder[styleId] = tableborder;
           }
         }
         if (tableBorderElement != null) {
-          final EdgeInsetsGeometry tablePadding =
-              _parseCellMargin(tableBorderElement.getElement('w:tblCellMar'));
+          final EdgeInsetsGeometry tablePadding = _parseCellMargin(
+            tableBorderElement.getElement('w:tblCellMar'),
+          );
 
           newCellPadding[styleId] = tablePadding;
         }
 
         stylesMap[styleId] = <String, TextStyle?>{
           "${type}pPr": paragraphId,
-          "${type}rPr": parsedStyles
+          "${type}rPr": parsedStyles,
         };
         if (border != null) {
           newBorderMap[styleId] = border;
@@ -264,16 +293,18 @@ class DocxExtractor {
     }
 
     final XmlElement? topBorder = element.findElements('w:top').firstOrNull;
-    final XmlElement? bottomBorder =
-        element.findElements('w:bottom').firstOrNull;
+    final XmlElement? bottomBorder = element
+        .findElements('w:bottom')
+        .firstOrNull;
     final XmlElement? leftBorder = element.findElements('w:left').firstOrNull;
     final XmlElement? rightBorder = element.findElements('w:right').firstOrNull;
 
     return TableBorder(
-        top: _parseTableBorderSide(topBorder),
-        left: _parseTableBorderSide(leftBorder),
-        right: _parseTableBorderSide(rightBorder),
-        bottom: _parseTableBorderSide(bottomBorder));
+      top: _parseTableBorderSide(topBorder),
+      left: _parseTableBorderSide(leftBorder),
+      right: _parseTableBorderSide(rightBorder),
+      bottom: _parseTableBorderSide(bottomBorder),
+    );
   }
 
   BorderSide _parseTableBorderSide(XmlElement? element) {
@@ -289,17 +320,20 @@ class DocxExtractor {
   EdgeInsetsGeometry _parseCellMargin(XmlElement? element) {
     if (element == null) return EdgeInsets.zero;
     final XmlElement? topPadding = element.findElements('w:top').firstOrNull;
-    final XmlElement? bottomPadding =
-        element.findElements('w:bottom').firstOrNull;
+    final XmlElement? bottomPadding = element
+        .findElements('w:bottom')
+        .firstOrNull;
     final XmlElement? leftPadding = element.findElements('w:left').firstOrNull;
-    final XmlElement? rightPadding =
-        element.findElements('w:right').firstOrNull;
+    final XmlElement? rightPadding = element
+        .findElements('w:right')
+        .firstOrNull;
 
     return EdgeInsets.only(
-        bottom: _parseCellMarginValue(bottomPadding),
-        left: _parseCellMarginValue(leftPadding),
-        right: _parseCellMarginValue(rightPadding),
-        top: _parseCellMarginValue(topPadding));
+      bottom: _parseCellMarginValue(bottomPadding),
+      left: _parseCellMarginValue(leftPadding),
+      right: _parseCellMarginValue(rightPadding),
+      top: _parseCellMarginValue(topPadding),
+    );
   }
 
   double _parseCellMarginValue(XmlElement? element) {
@@ -315,8 +349,9 @@ class DocxExtractor {
         <String, Map<int, String>>{};
 
     // Iterate through all abstractNum elements
-    for (final XmlElement abstractNum
-        in document.findAllElements('w:abstractNum')) {
+    for (final XmlElement abstractNum in document.findAllElements(
+      'w:abstractNum',
+    )) {
       final String abstractNumId =
           abstractNum.getAttribute('w:abstractNumId') ?? '';
       final Map<int, String> levels = <int, String>{};
@@ -365,10 +400,14 @@ class DocxExtractor {
         .getElement('w:pPr')
         ?.getElement('w:pStyle')
         ?.getAttribute('w:val');
-    final XmlElement? borderElement =
-        paragraph.getElement('w:pPr')?.findElements('w:pBdr').firstOrNull;
-    final XmlElement? backgroundColorElement =
-        paragraph.getElement('w:pPr')?.findElements('w:shd').firstOrNull;
+    final XmlElement? borderElement = paragraph
+        .getElement('w:pPr')
+        ?.findElements('w:pBdr')
+        .firstOrNull;
+    final XmlElement? backgroundColorElement = paragraph
+        .getElement('w:pPr')
+        ?.findElements('w:shd')
+        .firstOrNull;
     String? bgHex;
     if (backgroundColorElement != null &&
         backgroundColorElement.getAttribute('w:val') != "clear") {
@@ -387,19 +426,25 @@ class DocxExtractor {
     TextAlign? textAlignment;
     Border? border;
     if (pprStyleId != null) {
-      mergedStye = _documentStyles[pprStyleId]?["paragraph" "pPr"];
       mergedStye =
-          mergedStye?.merge(_documentStyles[pprStyleId]?["paragraph" "rPr"]);
+          _documentStyles[pprStyleId]?["paragraph"
+              "pPr"];
+      mergedStye = mergedStye?.merge(
+        _documentStyles[pprStyleId]?["paragraph"
+            "rPr"],
+      );
       border = _documentBorder[pprStyleId];
       textAlignment = _documentTextAlignment[pprStyleId];
     }
     mergedStye ??= const TextStyle(color: Colors.black);
 
     if (isListItem) {
-      final XmlElement? numPr =
-          paragraph.getElement('w:pPr')?.getElement('w:numPr');
+      final XmlElement? numPr = paragraph
+          .getElement('w:pPr')
+          ?.getElement('w:numPr');
       final String? numId = numPr?.getElement('w:numId')?.getAttribute('w:val');
-      final int ilvl = int.tryParse(
+      final int ilvl =
+          int.tryParse(
             numPr?.getElement('w:ilvl')?.getAttribute('w:val') ?? '0',
           ) ??
           0;
@@ -412,22 +457,31 @@ class DocxExtractor {
           if (listLevelStyle.toLowerCase() == 'bullet') {
             _level = null;
           }
-          spans.add(WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Padding(
-              padding: EdgeInsets.only(left: ilvl != 0 ? 30 : 20.0, right: 4),
-              child: listLevelStyle.toLowerCase() == 'bullet'
-                  ? _getBulletForLevel(ilvl)
-                  : Transform.translate(
-                      offset: const Offset(0, -1),
-                      child: Text(
-                        _getFormattedListNumber(
-                            _numberingDefinitions, counter, numId, newLevel),
-                        style:
-                            const TextStyle(color: Colors.black, fontSize: 16),
-                      )),
+          spans.add(
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: EdgeInsets.only(left: ilvl != 0 ? 30 : 20.0, right: 4),
+                child: listLevelStyle.toLowerCase() == 'bullet'
+                    ? _getBulletForLevel(ilvl)
+                    : Transform.translate(
+                        offset: const Offset(0, -1),
+                        child: Text(
+                          _getFormattedListNumber(
+                            _numberingDefinitions,
+                            counter,
+                            numId,
+                            newLevel,
+                          ),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+              ),
             ),
-          ));
+          );
         }
       }
     } else {
@@ -440,8 +494,9 @@ class DocxExtractor {
       final Iterable<XmlElement> tabs = run.findElements('w:tab');
       for (final XmlElement textElement in text) {
         TextStyle style = _parseRunStyle(run.getElement('w:rPr'));
-        final XmlElement? borderElement =
-            run.getElement('w:rPr')?.getElement('w:bdr');
+        final XmlElement? borderElement = run
+            .getElement('w:rPr')
+            ?.getElement('w:bdr');
         Border newCharacterBorder = _characterBorder(borderElement);
 
         final String? characterId = run
@@ -450,23 +505,22 @@ class DocxExtractor {
             ?.getAttribute('w:val');
 
         if (characterId != null) {
-          style = _documentStyles[characterId]?["character" "rPr"] ?? style;
+          style =
+              _documentStyles[characterId]?["character"
+                  "rPr"] ??
+              style;
         }
         if (borderElement == null) {
-          spans.add(TextSpan(
-            text: textElement.innerText,
-            style: style,
-          ));
+          spans.add(TextSpan(text: textElement.innerText, style: style));
         } else {
-          spans.add(WidgetSpan(
-            child: Container(
-              decoration: BoxDecoration(border: newCharacterBorder),
-              child: Text(
-                textElement.innerText,
-                style: style,
+          spans.add(
+            WidgetSpan(
+              child: Container(
+                decoration: BoxDecoration(border: newCharacterBorder),
+                child: Text(textElement.innerText, style: style),
               ),
             ),
-          ));
+          );
         }
       }
       for (XmlElement tab in tabs) {
@@ -474,34 +528,38 @@ class DocxExtractor {
         final String leader = tab.getAttribute('leader') ?? 'none';
         final String val = tab.getAttribute('val') ?? 'start';
 
-        spans.add(WidgetSpan(
-          child: _buildTabWidget(pos: pos, leader: leader, val: val),
-        ));
+        spans.add(
+          WidgetSpan(
+            child: _buildTabWidget(pos: pos, leader: leader, val: val),
+          ),
+        );
       }
 
       final XmlElement? hasPageBreak = run.getElement('w:pict');
 
       if (hasPageBreak != null) {
-        spans.add(const WidgetSpan(
+        spans.add(
+          const WidgetSpan(
             child: SizedBox(
-          width: double.infinity,
-          child: Divider(
-            color: Colors.grey,
-            thickness: 1,
+              width: double.infinity,
+              child: Divider(color: Colors.grey, thickness: 1),
+            ),
           ),
-        )));
+        );
       }
 
       // Check for embedded images
       run.findAllElements('a:blip').forEach((XmlElement imageElement) {
         final String embedId = imageElement.getAttribute('r:embed') ?? '';
         if (_imageMap.containsKey(embedId)) {
-          spans.add(WidgetSpan(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Image.memory(_imageMap[embedId]!),
+          spans.add(
+            WidgetSpan(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Image.memory(_imageMap[embedId]!),
+              ),
             ),
-          ));
+          );
         }
       });
     });
@@ -510,20 +568,21 @@ class DocxExtractor {
     final TextStyle? headingStyle = _parseHeadingStyle(paragraph);
     // Handle paragraph spacing
     final EdgeInsets paragraphSpacing = _parseParagraphSpacing(paragraph);
-    final TextAlign newTextAlignment =
-        _getTextAlign(paragraph.getElement('w:pPr')?.getElement('w:jc'));
+    final TextAlign newTextAlignment = _getTextAlign(
+      paragraph.getElement('w:pPr')?.getElement('w:jc'),
+    );
 
     if (headingStyle != null) {
       return Padding(
         padding: paragraphSpacing,
         child: Container(
           decoration: BoxDecoration(
-              color: backgroundColor,
-              border: border ?? _createBorder(borderElement)),
+            color: backgroundColor,
+            border: border ?? _createBorder(borderElement),
+          ),
           child: Text.rich(
             TextSpan(
-                children: spans.map(
-              (InlineSpan span) {
+              children: spans.map((InlineSpan span) {
                 if (span is TextSpan) {
                   return TextSpan(
                     text: span.toPlainText(),
@@ -534,8 +593,8 @@ class DocxExtractor {
                 } else {
                   return span;
                 }
-              },
-            ).toList()),
+              }).toList(),
+            ),
             textAlign: textAlignment ?? newTextAlignment,
             style: headingStyle,
           ),
@@ -549,14 +608,12 @@ class DocxExtractor {
       padding: paragraphSpacing,
       child: Container(
         decoration: BoxDecoration(
-            color: backgroundColor,
-            border: border ?? _createBorder(borderElement)),
+          color: backgroundColor,
+          border: border ?? _createBorder(borderElement),
+        ),
         child: Text.rich(
           textAlign: textAlignment ?? newTextAlignment,
-          TextSpan(
-            children: spans,
-            style: mergedStye,
-          ),
+          TextSpan(children: spans, style: mergedStye),
         ),
       ),
     );
@@ -629,9 +686,7 @@ class DocxExtractor {
         return Container(
           width: tabWidth,
           decoration: const BoxDecoration(
-            border: Border(
-              right: BorderSide(color: Colors.grey, width: 1),
-            ),
+            border: Border(right: BorderSide(color: Colors.grey, width: 1)),
           ),
         );
       default:
@@ -648,11 +703,13 @@ class DocxExtractor {
 
   Border _createBorder(XmlElement? borderElement) {
     final XmlElement? top = borderElement?.findElements('w:top').firstOrNull;
-    final XmlElement? bottom =
-        borderElement?.findElements('w:bottom').firstOrNull;
+    final XmlElement? bottom = borderElement
+        ?.findElements('w:bottom')
+        .firstOrNull;
     final XmlElement? left = borderElement?.findElements('w:left').firstOrNull;
-    final XmlElement? right =
-        borderElement?.findElements('w:right').firstOrNull;
+    final XmlElement? right = borderElement
+        ?.findElements('w:right')
+        .firstOrNull;
 
     return Border(
       top: top != null ? _parseBorderSide(top) : BorderSide.none,
@@ -743,11 +800,15 @@ class DocxExtractor {
 
   EdgeInsets _parseParagraphSpacing(XmlElement paragraph) {
     final XmlElement? pPr = paragraph.getElement('w:pPr');
-    final int before = int.tryParse(
-            pPr?.getElement('w:spacing')?.getAttribute('w:before') ?? "0") ??
+    final int before =
+        int.tryParse(
+          pPr?.getElement('w:spacing')?.getAttribute('w:before') ?? "0",
+        ) ??
         0;
-    final int after = int.tryParse(
-            pPr?.getElement('w:spacing')?.getAttribute('w:after') ?? "0") ??
+    final int after =
+        int.tryParse(
+          pPr?.getElement('w:spacing')?.getAttribute('w:after') ?? "0",
+        ) ??
         0;
 
     // Convert Word spacing units to Flutter padding (assume 20 units = 1 point)
@@ -783,9 +844,9 @@ class DocxExtractor {
     return style; // Not a heading
   }
 
-// Helper to determine the list type
+  // Helper to determine the list type
 
-// Helper to get list bullet (number or bullet symbol)
+  // Helper to get list bullet (number or bullet symbol)
   Widget _getBulletForLevel(int level) {
     List<String> bulletStyles = <String>[
       '•',
@@ -796,31 +857,33 @@ class DocxExtractor {
       '»',
       '›',
       '⁃',
-      '–'
+      '–',
     ];
     List<double> bulletOffset = <double>[-3.5, -1, 1, 0, 0, 0, 0, 0, 0];
     int bulletIndex = level % bulletStyles.length;
     String bullet = bulletStyles[bulletIndex];
     double yOffset = bulletOffset[bulletIndex];
     return Transform.translate(
-        offset: Offset(0, yOffset),
-        child: Text(
-          bullet,
-          style: const TextStyle(
-            fontSize: 20, // Adjust size based on level
-            color: Colors.black,
-          ),
-        ));
+      offset: Offset(0, yOffset),
+      child: Text(
+        bullet,
+        style: const TextStyle(
+          fontSize: 20, // Adjust size based on level
+          color: Colors.black,
+        ),
+      ),
+    );
   }
 
   int? _level;
 
   /// Retrieves the formatted list number for an ordered list item
   String _getFormattedListNumber(
-      Map<String, Map<int, String>> numberingDefinitions,
-      Map<String, int> counters,
-      String numId,
-      int ilvl) {
+    Map<String, Map<int, String>> numberingDefinitions,
+    Map<String, int> counters,
+    String numId,
+    int ilvl,
+  ) {
     // Retrieve the format for the current level
     final String format = numberingDefinitions[numId]?[ilvl] ?? 'decimal';
 
@@ -860,7 +923,7 @@ class DocxExtractor {
       'IX',
       'V',
       'IV',
-      'I'
+      'I',
     ];
     final List<int> romanValues = <int>[
       1000,
@@ -875,7 +938,7 @@ class DocxExtractor {
       9,
       5,
       4,
-      1
+      1,
     ];
     String result = '';
     int i = 0;
@@ -892,32 +955,21 @@ class DocxExtractor {
 
   /// Retrieves the list type (ordered/unordered) based on paragraph properties
 
-  List<Widget> _parseContent({
-    required XmlDocument documentXml,
-  }) {
+  List<Widget> _parseContent({required XmlDocument documentXml}) {
     final List<Widget> widgets = <Widget>[];
     final Map<String, int> counters = <String, int>{};
     for (final XmlElement body in documentXml.findAllElements('w:body')) {
       for (final XmlElement element in body.children.whereType<XmlElement>()) {
         switch (element.name.local) {
           case 'p':
-            widgets.add(_parseParagraph(
-              paragraph: element,
-              counter: counters,
-            ));
+            widgets.add(_parseParagraph(paragraph: element, counter: counters));
             break;
           case 'tbl':
-            widgets.add(_parseTable(
-              table: element,
-              counter: counters,
-            ));
+            widgets.add(_parseTable(table: element, counter: counters));
             break;
 
           case 'sdt':
-            widgets.add(_parseSdt(
-              sdtElement: element,
-              counter: counters,
-            ));
+            widgets.add(_parseSdt(sdtElement: element, counter: counters));
             break;
           // case 'sectPr':
           //   widgets.add(_parseSectionProperties(element));
@@ -935,8 +987,9 @@ class DocxExtractor {
   }) {
     final List<TableRow> rows = <TableRow>[];
     TableBorder? tableBorder;
-    final String? tableBorderStyleid =
-        table.getElement("w:tblStyle")?.getAttribute('w:val');
+    final String? tableBorderStyleid = table
+        .getElement("w:tblStyle")
+        ?.getAttribute('w:val');
     if (tableBorderStyleid != null) {
       tableBorder = _tablesBorders[tableBorderStyleid];
     }
@@ -957,21 +1010,24 @@ class DocxExtractor {
         final Color backgroundColor = _parseCellBackgroundColor(cell);
 
         cell.findAllElements('w:p').forEach((XmlElement paragraph) {
-          cellContent.add(_parseParagraph(
-            paragraph: paragraph,
-            counter: counter,
-          ));
+          cellContent.add(
+            _parseParagraph(paragraph: paragraph, counter: counter),
+          );
         });
 
-        cells.add(Container(
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            color: backgroundColor, // Apply background color
-            border:
-                Border.all(color: borderStyle.color, width: borderStyle.width),
+        cells.add(
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: backgroundColor, // Apply background color
+              border: Border.all(
+                color: borderStyle.color,
+                width: borderStyle.width,
+              ),
+            ),
+            child: Column(children: cellContent),
           ),
-          child: Column(children: cellContent),
-        ));
+        );
       });
 
       // Update the maxCells if this row has more cells
@@ -986,16 +1042,19 @@ class DocxExtractor {
       final int childrenCount = row.children.length;
       if (childrenCount < maxCells) {
         for (int i = 0; i < maxCells - childrenCount; i++) {
-          row.children.add(Container(
-            padding: const EdgeInsets.all(8.0),
-            child: const SizedBox.shrink(), // Empty cell
-          ));
+          row.children.add(
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              child: const SizedBox.shrink(), // Empty cell
+            ),
+          );
         }
       }
     }
 
     return Table(
-      border: tableBorder ??
+      border:
+          tableBorder ??
           TableBorder.all(color: borderStyle.color, width: borderStyle.width),
       children: rows,
     );
@@ -1003,12 +1062,14 @@ class DocxExtractor {
 
   // Parse table border style (color, width)
   TableBorderStyle _parseTableBorderStyle(XmlElement table) {
-    final String borderColor = table
+    final String borderColor =
+        table
             .getElement('w:tblBorders')
             ?.getElement('w:top')
             ?.getAttribute('w:color') ??
         '000000';
-    final String borderWidth = table
+    final String borderWidth =
+        table
             .getElement('w:tblBorders')
             ?.getElement('w:top')
             ?.getAttribute('w:space') ??
@@ -1044,15 +1105,9 @@ class DocxExtractor {
     final List<Widget> contentWidgets = content.map((XmlElement childElement) {
       switch (childElement.name.local) {
         case 'p':
-          return _parseParagraph(
-            paragraph: childElement,
-            counter: counter,
-          );
+          return _parseParagraph(paragraph: childElement, counter: counter);
         case 'tbl':
-          return _parseTable(
-            table: childElement,
-            counter: counter,
-          );
+          return _parseTable(table: childElement, counter: counter);
         default:
           return Text(childElement.innerText);
       }
@@ -1070,28 +1125,34 @@ class DocxExtractor {
     final bool isBold = styleElement.findElements('w:b').isNotEmpty;
     final bool isItalic = styleElement.findElements('w:i').isNotEmpty;
     final bool isUnderline = styleElement.findElements('w:u').isNotEmpty;
-    final bool isStrikeThrough =
-        styleElement.findElements('w:strike').isNotEmpty;
+    final bool isStrikeThrough = styleElement
+        .findElements('w:strike')
+        .isNotEmpty;
     if (isUnderline) {
       textDecoration = TextDecoration.underline;
     } else if (isStrikeThrough) {
       textDecoration = TextDecoration.lineThrough;
     }
     // Parse font size (half-points to points)
-    final double fontSize = double.tryParse(
+    final double fontSize =
+        double.tryParse(
           styleElement.getElement('w:sz')?.getAttribute('w:val') ?? '20',
         ) ??
         16.0;
 
     // Parse text color (if available)
-    final String? colorHex =
-        styleElement.findElements('w:color').firstOrNull?.getAttribute('w:val');
-    final Color textColor =
-        colorHex != null ? _hexToColor(colorHex) : Colors.black;
+    final String? colorHex = styleElement
+        .findElements('w:color')
+        .firstOrNull
+        ?.getAttribute('w:val');
+    final Color textColor = colorHex != null
+        ? _hexToColor(colorHex)
+        : Colors.black;
 
     // Ensure transparent colors are assigned black
-    final Color effectiveTextColor =
-        textColor == Colors.transparent ? Colors.black : textColor;
+    final Color effectiveTextColor = textColor == Colors.transparent
+        ? Colors.black
+        : textColor;
 
     // Parse background color (shading) for text background
 

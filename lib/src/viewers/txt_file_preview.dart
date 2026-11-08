@@ -11,10 +11,11 @@ class TxtPreviewScreen extends StatefulWidget {
   final EdgeInsets? padding;
 
   /// Creates a [TxtPreviewScreen] widget.
-  const TxtPreviewScreen(
-      {super.key,
-      required this.file,
-      this.padding = const EdgeInsets.only(bottom: 68)});
+  const TxtPreviewScreen({
+    super.key,
+    required this.file,
+    this.padding = const EdgeInsets.only(bottom: 68),
+  });
 
   @override
   TxtPreviewScreenState createState() => TxtPreviewScreenState();
@@ -32,7 +33,6 @@ class TxtPreviewScreenState extends State<TxtPreviewScreen> {
   }
 
   @override
-
   /// Called when the [TxtPreviewScreen] widget is updated. If the [File] being
   /// displayed has changed, this method reads the new file and updates the
   /// [txtData] future with the new data.
@@ -56,7 +56,6 @@ class TxtPreviewScreenState extends State<TxtPreviewScreen> {
   }
 
   @override
-
   /// Builds a widget that displays the TXT file at [widget.file].
   ///
   /// The widget displays the TXT file in a table. The table is horizontally
@@ -66,21 +65,23 @@ class TxtPreviewScreenState extends State<TxtPreviewScreen> {
   ///
   /// If the TXT file fails to load, a [Text] widget with the error message is
   /// displayed instead.
-
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<String>(
-        future: txtData,
-        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-          return Scaffold(
-              body: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 280),
-                  child: Padding(
-                    padding:
-                        widget.padding ?? const EdgeInsets.only(bottom: 68),
-                    child: Text(snapshot.hasData
-                        ? snapshot.requireData
-                        : "No TXT Data Loaded"),
-                  )));
-        });
+      future: txtData,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator.adaptive());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Unable to read file:\n${snapshot.error}'));
+        }
+
+        return SingleChildScrollView(
+          padding: widget.padding ?? const EdgeInsets.only(bottom: 68),
+          child: SelectableText(snapshot.data ?? 'No Data Loaded'),
+        );
+      },
+    );
   }
 }

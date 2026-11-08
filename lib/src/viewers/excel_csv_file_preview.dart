@@ -16,11 +16,16 @@ class ExcelCSVPreviewScreen extends StatefulWidget {
   /// The padding inside the scroll for the table
   final EdgeInsets? padding;
 
+  /// The background color of the widget.
+  final Color backgroundColor;
+
   /// Creates a [ExcelCSVPreviewScreen] widget.
-  const ExcelCSVPreviewScreen(
-      {super.key,
-      required this.file,
-      this.padding = const EdgeInsets.only(bottom: 68)});
+  const ExcelCSVPreviewScreen({
+    super.key,
+    required this.file,
+    this.padding = const EdgeInsets.only(bottom: 68),
+    required this.backgroundColor,
+  });
 
   @override
   ExcelCSVPreviewScreenState createState() => ExcelCSVPreviewScreenState();
@@ -57,14 +62,14 @@ class ExcelCSVPreviewScreenState extends State<ExcelCSVPreviewScreen> {
   Future<List<List<String>>> readExcelFile(File file) async {
     try {
       if (kIsWeb) {
-        Uint8List fileBytes =
-            await file.readAsBytes(); //Read file bytes in the main thread
+        Uint8List fileBytes = await file
+            .readAsBytes(); //Read file bytes in the main thread
         return _parseExcelData(fileBytes); //Runs synchronously on Web
       } else {
         final FileType fileType = detectFileType(file.path)!;
         if (fileType == FileType.excel) {
-          Uint8List fileBytes =
-              await file.readAsBytes(); //Read file bytes in the main thread
+          Uint8List fileBytes = await file
+              .readAsBytes(); //Read file bytes in the main thread
 
           return await compute(_parseExcelData, fileBytes);
         } else {
@@ -83,7 +88,7 @@ class ExcelCSVPreviewScreenState extends State<ExcelCSVPreviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: widget.backgroundColor,
       body: Scrollbar(
         controller: _verticalController,
         thumbVisibility: true,
@@ -92,62 +97,71 @@ class ExcelCSVPreviewScreenState extends State<ExcelCSVPreviewScreen> {
           padding: widget.padding,
           child: FutureBuilder<List<List<String>>>(
             future: _excelData,
-            builder: (BuildContext context,
-                AsyncSnapshot<List<List<String>>> snapshot) {
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 280),
-                child: snapshot.hasData
-                    ? Theme(
-                        data: Theme.of(context).copyWith(
-                            cardTheme: const CardThemeData(elevation: 0)),
-                        child: PaginatedDataTable(
-                          columns: <DataColumn>[
-                            const DataColumn(label: Text("  ")),
-                            ...snapshot.requireData.first.map(
-                              (String header) => DataColumn(
-                                label: Text(header == 'null' ? '' : header,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold)),
+            builder:
+                (
+                  BuildContext context,
+                  AsyncSnapshot<List<List<String>>> snapshot,
+                ) {
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 280),
+                    child: snapshot.hasData
+                        ? Theme(
+                            data: Theme.of(context).copyWith(
+                              cardTheme: const CardThemeData(elevation: 0),
+                            ),
+                            child: PaginatedDataTable(
+                              columns: <DataColumn>[
+                                const DataColumn(label: Text("  ")),
+                                ...snapshot.requireData.first.map(
+                                  (String header) => DataColumn(
+                                    label: Text(
+                                      header == 'null' ? '' : header,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              source: _ExcelDataSource(
+                                snapshot.requireData.sublist(1),
                               ),
+                              rowsPerPage: 100,
+                              showFirstLastButtons: true,
+                              showEmptyRows: true,
+                              dataRowMinHeight: 0,
+                              dataRowMaxHeight: 40,
+                              headingRowHeight: 40,
+                              columnSpacing: 16,
                             ),
-                          ],
-                          source:
-                              _ExcelDataSource(snapshot.requireData.sublist(1)),
-                          rowsPerPage: 100,
-                          showFirstLastButtons: true,
-                          showEmptyRows: true,
-                          dataRowMinHeight: 0,
-                          dataRowMaxHeight: 40,
-                          headingRowHeight: 40,
-                          columnSpacing: 16,
-                        ),
-                      )
-                    : GridView.builder(
-                        shrinkWrap: true,
-                        itemCount: 100,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 5,
-                          crossAxisSpacing: 2,
-                          mainAxisSpacing: 2,
-                          childAspectRatio: 2,
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        itemBuilder: (_, __) {
-                          return ShimmerWidget.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              decoration:
-                                  const BoxDecoration(color: Colors.white),
-                            ),
-                          );
-                        },
-                      ),
-              );
-            },
+                          )
+                        : GridView.builder(
+                            shrinkWrap: true,
+                            itemCount: 100,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 5,
+                                  crossAxisSpacing: 2,
+                                  mainAxisSpacing: 2,
+                                  childAspectRatio: 2,
+                                ),
+                            padding: const EdgeInsets.all(16),
+                            itemBuilder: (_, _) {
+                              return ShimmerWidget.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  );
+                },
           ),
         ),
       ),
@@ -172,10 +186,14 @@ class _ExcelDataSource extends DataTableSource {
     );
   }
 
-  DataCell _buildDataCell(String text, {bool isHeader = false}) =>
-      DataCell(Text(text == 'null' ? '' : text,
-          style: TextStyle(
-              fontWeight: isHeader ? FontWeight.w300 : FontWeight.normal)));
+  DataCell _buildDataCell(String text, {bool isHeader = false}) => DataCell(
+    Text(
+      text == 'null' ? '' : text,
+      style: TextStyle(
+        fontWeight: isHeader ? FontWeight.w300 : FontWeight.normal,
+      ),
+    ),
+  );
 
   @override
   bool get isRowCountApproximate => false;
@@ -243,8 +261,10 @@ String _detectDelimiter(String content) {
   }
 
   return delimiterCount.entries
-      .reduce((MapEntry<String, int> a, MapEntry<String, int> b) =>
-          a.value > b.value ? a : b)
+      .reduce(
+        (MapEntry<String, int> a, MapEntry<String, int> b) =>
+            a.value > b.value ? a : b,
+      )
       .key;
 }
 
